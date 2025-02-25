@@ -6,8 +6,8 @@
  * See http://www.boost.org/libs/multi_index for library home page.
  */
 
-#ifndef BOOST_MULTI_INDEX_DETAIL_BIDIR_NODE_ITERATOR_HPP
-#define BOOST_MULTI_INDEX_DETAIL_BIDIR_NODE_ITERATOR_HPP
+#ifndef BOOST_MULTI_INDEX_DETAIL_RND_NODE_ITERATOR_HPP
+#define BOOST_MULTI_INDEX_DETAIL_RND_NODE_ITERATOR_HPP
 
 #if defined(_MSC_VER)
 #pragma once
@@ -27,14 +27,12 @@ namespace multi_index{
 
 namespace detail{
 
-/* Iterator class for node-based indices with bidirectional
- * iterators (ordered and sequenced indices.)
- */
+/* Iterator class for node-based indices with random access iterators. */
 
 template<typename Node>
-class bidir_node_iterator:
-  public bidirectional_iterator_helper<
-    bidir_node_iterator<Node>,
+class rnd_node_iterator:
+  public random_access_iterator_helper<
+    rnd_node_iterator<Node>,
     typename Node::value_type,
     typename Node::difference_type,
     const typename Node::value_type*,
@@ -42,23 +40,35 @@ class bidir_node_iterator:
 {
 public:
   /* coverity[uninit_ctor]: suppress warning */
-  bidir_node_iterator(){}
-  explicit bidir_node_iterator(Node* node_):node(node_){}
+  rnd_node_iterator(){}
+  explicit rnd_node_iterator(Node* node_):node(node_){}
 
   const typename Node::value_type& operator*()const
   {
     return node->value();
   }
 
-  bidir_node_iterator& operator++()
+  rnd_node_iterator& operator++()
   {
     Node::increment(node);
     return *this;
   }
 
-  bidir_node_iterator& operator--()
+  rnd_node_iterator& operator--()
   {
     Node::decrement(node);
+    return *this;
+  }
+
+  rnd_node_iterator& operator+=(typename Node::difference_type n)
+  {
+    Node::advance(node,n);
+    return *this;
+  }
+
+  rnd_node_iterator& operator-=(typename Node::difference_type n)
+  {
+    Node::advance(node,-n);
     return *this;
   }
 
@@ -99,10 +109,26 @@ private:
 
 template<typename Node>
 bool operator==(
-  const bidir_node_iterator<Node>& x,
-  const bidir_node_iterator<Node>& y)
+  const rnd_node_iterator<Node>& x,
+  const rnd_node_iterator<Node>& y)
 {
   return x.get_node()==y.get_node();
+}
+
+template<typename Node>
+bool operator<(
+  const rnd_node_iterator<Node>& x,
+  const rnd_node_iterator<Node>& y)
+{
+  return Node::distance(x.get_node(),y.get_node())>0;
+}
+
+template<typename Node>
+typename Node::difference_type operator-(
+  const rnd_node_iterator<Node>& x,
+  const rnd_node_iterator<Node>& y)
+{
+  return Node::distance(y.get_node(),x.get_node());
 }
 
 } /* namespace multi_index::detail */
