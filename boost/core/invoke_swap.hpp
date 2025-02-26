@@ -43,11 +43,6 @@
 
 namespace boost_swap_impl {
 
-// we can't use type_traits here
-
-template<class T> struct is_const { enum _vt { value = 0 }; };
-template<class T> struct is_const<T const> { enum _vt { value = 1 }; };
-
 // Use std::swap if argument dependent lookup fails.
 // We need to have this at namespace scope to be able to use unqualified swap() call
 // in noexcept specification.
